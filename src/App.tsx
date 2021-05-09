@@ -1,45 +1,32 @@
-import './App.css';
+import { Button, CircularProgress } from '@material-ui/core';
+import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline';
+import React, { lazy, Suspense, useState } from 'react';
 
-import React, { useState } from 'react';
+import { Props } from './component/Control';
 
-import logo from './logo.svg';
+const Spine = lazy(() => import('./component/Control'));
 
-function App() {
-  const [count, setCount] = useState(0);
-
+function App(props: Props): JSX.Element {
+  const [load, setLoad] = useState(false);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer">
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer">
-            Vite Docs
-          </a>
-        </p>
-      </header>
+    <div>
+      <ScopedCssBaseline>
+        {load ? (
+          <Suspense fallback={<CircularProgress color="secondary" />}>
+            <Spine {...props} />
+          </Suspense>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setLoad(true);
+            }}>
+            点击加载
+          </Button>
+        )}
+      </ScopedCssBaseline>
     </div>
   );
 }
-
 export default App;

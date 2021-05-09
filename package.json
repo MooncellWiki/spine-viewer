@@ -1,9 +1,9 @@
 {
   "name": "spine-v2",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base=http://static.prts.wiki/spinev2/",
     "serve": "vite preview",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "lint:format": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\" ",
@@ -11,12 +11,20 @@
     "type-check": "tsc"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.4",
+    "@material-ui/icons": "^4.11.2",
+    "hammerjs": "^2.0.8",
+    "material-ui-color": "file:material-ui-color/dist/",
+    "material-ui-popup-state": "^1.8.3",
+    "prop-types": "^15.7.2",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
   "devDependencies": {
+    "@types/dom-mediacapture-record": "^1.0.7",
+    "@types/hammerjs": "^2.0.39",
     "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
+    "@types/react-dom": "^17.0.3",
     "@typescript-eslint/eslint-plugin": "^4.22.1",
     "@typescript-eslint/parser": "^4.22.1",
     "@vitejs/plugin-react-refresh": "^1.3.1",
@@ -25,9 +33,9 @@
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.23.2",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
     "prettier": "^2.2.1",
     "typescript": "^4.1.2",
-    "vite": "^2.2.3",
-    "eslint-plugin-simple-import-sort": "^7.0.0"
+    "vite": "^2.2.3"
   }
 }
