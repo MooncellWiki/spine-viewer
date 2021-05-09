@@ -286,7 +286,9 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
           <Grid container justify="center">
             <Tooltip title="实验性WEBM导出" aria-label="实验性WEBM导出">
               <IconButton
-                disabled={!MediaRecorder.isTypeSupported('video/webm')}
+                disabled={
+                  !(window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm'))
+                }
                 onClick={() => {
                   setRecState(true);
                   spineRef.current?.rec(
