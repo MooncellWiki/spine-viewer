@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  createStyles,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -13,6 +14,7 @@ import {
   IconButton,
   InputLabel,
   LinearProgress,
+  makeStyles,
   MenuItem,
   Select,
   Slider,
@@ -82,7 +84,17 @@ interface Update {
   json: string;
   animations: string[];
 }
+const useStyles = makeStyles({
+  control: {
+    width: '100%',
+    margin: '0.3rem 0',
+  },
+  select: {
+    height: 'auto',
+  },
+});
 export default function Control({ prefix, skin, name }: Props): JSX.Element {
+  const classes = useStyles();
   const skinList = Object.keys(skin);
   const [animationDetail, setAnimationDetail] = useState<AnimationDetail[]>([]);
   const [isLoading, setLoading] = useState(true);
@@ -151,15 +163,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
     <div style={{ width: 'fit-content', position: 'relative' }}>
       <Card style={{ display: 'flex', flexWrap: 'wrap', width: 'fit-content' }}>
         <CardContent style={{ width: 300 }}>
-          <FormControl
-            variant="outlined"
-            style={{
-              width: '100%',
-              margin: '0.3rem 0',
-            }}
-            size={'small'}>
+          <FormControl variant="outlined" className={classes.control} size={'small'}>
             <InputLabel id="skin-select-label">皮肤</InputLabel>
             <Select
+              classes={{ root: classes.select }}
               labelId="skin-select-label"
               native={isMobile()}
               value={state.skin}
@@ -182,15 +189,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               })}
             </Select>
           </FormControl>
-          <FormControl
-            variant="outlined"
-            size={'small'}
-            style={{
-              width: '100%',
-              margin: '0.3rem 0',
-            }}>
+          <FormControl variant="outlined" size={'small'} className={classes.control}>
             <InputLabel id="model-select-label">模型</InputLabel>
             <Select
+              classes={{ root: classes.select }}
               labelId="model-select-label"
               value={state.model}
               native={isMobile()}
@@ -213,15 +215,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               })}
             </Select>
           </FormControl>
-          <FormControl
-            variant="outlined"
-            size={'small'}
-            style={{
-              width: '100%',
-              margin: '0.3rem 0',
-            }}>
+          <FormControl variant="outlined" size={'small'} className={classes.control}>
             <InputLabel id="ani-select-label"></InputLabel>
             <Select
+              classes={{ root: classes.select }}
               labelId="ani-select-label"
               native={isMobile()}
               value={state.animation}
