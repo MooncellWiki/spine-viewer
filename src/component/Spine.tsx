@@ -94,6 +94,7 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
             widget.skeleton.x = 500;
             widget.skeleton.y = 200;
           }
+          setScale(1);
         },
         rec: (filename) => {
           if (recRef.current) {
@@ -169,7 +170,8 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
         if (!widget) {
           return;
         }
-        const delta = isFirefox() ? e.deltaY / 30 : e.deltaY * -0.001;
+        const delta = isFirefox() ? e.deltaY / -480 : e.deltaY * -0.001;
+        console.log(delta, e.deltaY);
         setScale((v) => {
           if (v + delta <= 0) {
             return v;

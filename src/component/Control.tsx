@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   CircularProgress,
-  createStyles,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -35,9 +34,10 @@ import {
   InfoOutlined,
   RefreshOutlined,
 } from '@material-ui/icons';
-import { ColorPicker } from 'material-ui-color';
+import { ColorPicker, useTranslate } from 'material-ui-color';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
+import zhCN from '../i18n.json';
 import { isMobile, ReqSkelData } from '../utils';
 import { AnimationDetail, Spine, SpineRef } from './Spine';
 export interface Props {
@@ -92,15 +92,24 @@ const useStyles = makeStyles({
   select: {
     height: 'auto',
   },
+  card: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    width: 'fit-content',
+  },
 });
 export default function Control({ prefix, skin, name }: Props): JSX.Element {
+  const translate = (v: string): string => {
+    return ((zhCN as any)[v] as string) || v;
+  };
+  useTranslate(() => ({ i18n: { language: 'zhCN' }, t: translate }));
   const classes = useStyles();
   const skinList = Object.keys(skin);
   const [animationDetail, setAnimationDetail] = useState<AnimationDetail[]>([]);
   const [isLoading, setLoading] = useState(true);
   // const setAnimationDetail = useCallback(innerSetAnimationDetail, [innerSetAnimationDetail]);
   const [isLoop, setLoop] = useState(false);
-  const [color, setColor] = useState<string>('ffffffff');
+  const [color, setColor] = useState<string>('ffffff');
   const [rgb, setRgb] = useState([1, 1, 1, 1]);
   const [speed, setSpeed] = useState(1);
   const [big, setBig] = useState(false);
@@ -150,6 +159,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
     },
   );
   const [open, setOpen] = useState(false);
+  const supportWebm = window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm');
   useEffect(() => {
     ReqSkelData(prefix + skin[state.skin][state.model].file + '.skel').then(
       (data: any) => {
@@ -161,7 +171,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
   const [recState, setRecState] = useState(false);
   return (
     <div style={{ width: 'fit-content', position: 'relative' }}>
-      <Card style={{ display: 'flex', flexWrap: 'wrap', width: 'fit-content' }}>
+      <Card className={classes.card}>
         <CardContent style={{ width: 300 }}>
           <FormControl variant="outlined" className={classes.control} size={'small'}>
             <InputLabel id="skin-select-label">皮肤</InputLabel>
@@ -258,11 +268,14 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               control={
                 <ColorPicker
                   hideTextfield
+                  // defaultValue="transparent"
+                  deferred
                   value={'#' + color}
                   onChange={(e) => {
                     setColor(e.hex);
                     setRgb([e.rgb[0] / 255, e.rgb[1] / 255, e.rgb[2] / 255, e.alpha]);
-                  }}></ColorPicker>
+                  }}
+                />
               }
               label="背景颜色"
               labelPlacement="end"
@@ -284,19 +297,25 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               setSpeed(v as number);
             }}></Slider>
           <Grid container justify="center">
-            <Tooltip title="实验性WEBM导出" aria-label="实验性WEBM导出">
-              <IconButton
-                disabled={
-                  !(window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm'))
-                }
-                onClick={() => {
-                  setRecState(true);
-                  spineRef.current?.rec(
-                    `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
-                  );
-                }}>
-                <GetAppOutlined />
-              </IconButton>
+            <Tooltip
+              title={
+                supportWebm
+                  ? '实验性WEBM导出'
+                  : '当前浏览器不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1'
+              }
+              aria-label="实验性WEBM导出">
+              <span>
+                <IconButton
+                  disabled={!supportWebm}
+                  onClick={() => {
+                    setRecState(true);
+                    spineRef.current?.rec(
+                      `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
+                    );
+                  }}>
+                  <GetAppOutlined />
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip title="重置位置" aria-label="重置位置">
               <IconButton
