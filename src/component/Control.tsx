@@ -159,7 +159,8 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
     },
   );
   const [open, setOpen] = useState(false);
-  const supportWebm = window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm');
+  const supportWebm =
+    window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm') && !isMobile();
   useEffect(() => {
     ReqSkelData(prefix + skin[state.skin][state.model].file + '.skel').then(
       (data: any) => {
@@ -301,7 +302,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               title={
                 supportWebm
                   ? '实验性WEBM导出'
-                  : '当前浏览器不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1'
+                  : '当前浏览器/设备不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1和桌面CPU'
               }
               aria-label="实验性WEBM导出">
               <span>
@@ -406,7 +407,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
           <CardContent>
             <div style={{ marginBottom: 16 }}>
               正在导出 {name}-{state.skin}-{state.model}-{state.animation}-x
-              {speed}.gif
+              {speed}.webm
             </div>
             <LinearProgress color="secondary" />
           </CardContent>
