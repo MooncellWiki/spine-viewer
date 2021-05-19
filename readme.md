@@ -15,4 +15,6 @@ yarn dev
 open [Widget:Spinev2/dev](http://prts.wiki/w/Widget:Spinev2/dev)
 
 ## todo
-- [ ] rm material-ui-color submodule when [this pr](https://github.com/mikbry/material-ui-color/issues/141) released
+- [ ] 学[kkdy](https://github.com/KKDYData/KokodayoData/blob/master/src/utils/Spine/initSpine.js)切换到spine-webgl
+- [ ] 支持GIF导出
+- [ ] [这个pr](https://github.com/mikbry/material-ui-color/issues/141) 发布之后 删除 material-ui-color 子模块
