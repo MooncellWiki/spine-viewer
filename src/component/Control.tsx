@@ -1,8 +1,10 @@
 import {
   Backdrop,
+  Badge,
   Box,
   Card,
   CardContent,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -109,8 +111,8 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
   const [isLoading, setLoading] = useState(true);
   // const setAnimationDetail = useCallback(innerSetAnimationDetail, [innerSetAnimationDetail]);
   const [isLoop, setLoop] = useState(false);
+  const [transparent, setTransparent] = useState(false);
   const [color, setColor] = useState<string>('ffffff');
-  const [rgb, setRgb] = useState([1, 1, 1, 1]);
   const [speed, setSpeed] = useState(1);
   const [big, setBig] = useState(false);
   const spineRef = useRef<SpineRef>(null);
@@ -173,7 +175,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
   return (
     <div style={{ width: 'fit-content', position: 'relative' }}>
       <Card className={classes.card}>
-        <CardContent style={{ width: 300 }}>
+        <CardContent style={{ width: 330 }}>
           <FormControl variant="outlined" className={classes.control} size={'small'}>
             <InputLabel id="skin-select-label">皮肤</InputLabel>
             <Select
@@ -263,23 +265,40 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                 />
               }
               label="循环播放"
-              labelPlacement="end"
+              labelPlacement="bottom"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  value={transparent}
+                  onChange={(e) => {
+                    console.log(e);
+                    setTransparent(e.target.checked);
+                  }}
+                />
+              }
+              label="透明背景"
+              labelPlacement="bottom"
             />
             <FormControlLabel
               control={
                 <ColorPicker
                   hideTextfield
+                  disableAlpha
                   // defaultValue="transparent"
                   deferred
                   value={'#' + color}
                   onChange={(e) => {
+                    if (transparent) {
+                      return;
+                    }
                     setColor(e.hex);
-                    setRgb([e.rgb[0] / 255, e.rgb[1] / 255, e.rgb[2] / 255, e.alpha]);
                   }}
                 />
               }
+              disabled={transparent}
               label="背景颜色"
-              labelPlacement="end"
+              labelPlacement="bottom"
             />
           </Grid>
           <Typography component="div" style={{ margin: '4px 0' }}>
@@ -304,8 +323,8 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                   ? '实验性WEBM导出'
                   : '当前浏览器/设备不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1和桌面CPU'
               }
-              aria-label="实验性WEBM导出">
-              <span>
+              aria-label="WEBM导出">
+              <Badge color="primary" badgeContent={'webm'}>
                 <IconButton
                   disabled={!supportWebm}
                   onClick={() => {
@@ -316,7 +335,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                   }}>
                   <GetAppOutlined />
                 </IconButton>
-              </span>
+              </Badge>
             </Tooltip>
             <Tooltip title="重置位置" aria-label="重置位置">
               <IconButton
@@ -375,12 +394,8 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               loop={isLoop}
               speed={speed}
               isBig={big}
-              color={{
-                r: rgb[0],
-                g: rgb[1],
-                b: rgb[2],
-                a: rgb[3],
-              }}
+              color={color}
+              transparent={transparent}
               onSuccess={useCallback((details) => {
                 setAnimationDetail(details);
                 setLoading(false);

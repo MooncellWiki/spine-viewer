@@ -10,7 +10,6 @@ import React, {
 
 import spine from '../spine/runtime/spine-widget';
 import { downloadBlob, isFirefox } from '../utils';
-
 export interface SpineProps {
   json: string;
   atlas: string;
@@ -18,12 +17,8 @@ export interface SpineProps {
   loop: boolean;
   skin: string;
   speed: number;
-  color: {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-  };
+  color: string;
+  transparent: boolean;
   isBig: boolean;
   onSuccess: (data: AnimationDetail[]) => void;
   onRecFinish: () => void;
@@ -49,6 +44,7 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
       ani,
       atlas,
       color,
+      transparent,
       loop,
       skin,
       speed,
@@ -63,8 +59,6 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
     const speedRef = useRef(1);
     const aniRef = useRef('');
     const loopRef = useRef(false);
-    const colorRef = useRef({ r: 1, g: 1, b: 1, a: 1 });
-
     const prevPositionRef = useRef<Position>();
     const hammerRef = useRef<HammerManager>();
 
@@ -205,6 +199,7 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
       if (!widget) {
         return;
       }
+      // console.log(widget.backgroundColor);
       // 单纯是动画变了 不需要重新渲染widget 直接调用api换在播放的动画
       widget.state.setAnimation(0, ani, loopRef.current);
     }, [ani]);
@@ -229,17 +224,6 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
       widget.state.timeScale = speed;
     }, [speed]);
 
-    //背景颜色
-    useEffect(() => {
-      const widget = widgetRef.current;
-      if (!widget) {
-        return;
-      }
-      // @ts-ignore
-      widget.backgroundColor = color;
-      colorRef.current = color;
-    }, [color]);
-
     useEffect(() => {
       // json和ani会一起置空 只判断一个就行
       if (json.length === 0) {
@@ -252,7 +236,7 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
         jsonContent: json,
         atlas: atlas,
         animation: aniRef.current,
-        backgroundColor: '#ffffffff',
+        backgroundColor: transparent ? '#00000000' : '#' + color,
         debug: false,
         loop: loopRef.current,
         skin: skin,
@@ -280,6 +264,7 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
                     type: 'video/webm',
                   });
                   downloadBlob(blob, recName.current || 'output');
+                  recChunks.current = [];
                   if (recDone.current) {
                     recDone.current();
                   }
@@ -299,8 +284,6 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
             dispose: () => {},
             event: () => {},
           });
-          // @ts-ignore
-          widget.backgroundColor = colorRef.current;
           widget.state.timeScale = speedRef.current;
           onSuccess(
             widget.skeleton.data.animations.map((v) => {
@@ -309,17 +292,28 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
           );
         },
       });
-    }, [atlas, json, onSuccess, scale, skin]);
+    }, [atlas, json, onSuccess, scale, skin, transparent, color]);
 
     return (
       <div
         style={{
-          width: 1000,
-          height: 1000,
-          transform: isBig ? '' : 'scale(0.3,0.3)',
-          transformOrigin: 'top left',
-        }}
-        ref={containerRef}></div>
+          backgroundImage: `
+        linear-gradient(45deg, #ccc 25%, transparent 25%), 
+        linear-gradient(135deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(135deg, transparent 75%, #ccc 75%)`,
+          backgroundSize: '24px 24px',
+          backgroundPosition: '0 0, 12px 0, 12px -12px, 0px 12px',
+        }}>
+        <div
+          style={{
+            width: 1000,
+            height: 1000,
+            transform: isBig ? '' : 'scale(0.3,0.3)',
+            transformOrigin: 'top left',
+          }}
+          ref={containerRef}></div>
+      </div>
     );
   },
 );
