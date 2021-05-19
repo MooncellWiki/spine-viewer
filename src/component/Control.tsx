@@ -29,6 +29,7 @@ import {
   Tooltip,
   Typography,
 } from '@material-ui/core';
+import { createGenerateClassName, StylesProvider } from '@material-ui/core/styles';
 import {
   FullscreenExitOutlined,
   FullscreenOutlined,
@@ -86,6 +87,9 @@ interface Update {
   json: string;
   animations: string[];
 }
+const generateClassName = createGenerateClassName({
+  productionPrefix: 'spineViewer',
+});
 const useStyles = makeStyles({
   control: {
     width: '100%',
@@ -173,292 +177,293 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
   }, [prefix, skin, state.model, state.skin]);
   const [recState, setRecState] = useState(false);
   return (
-    <div style={{ width: 'fit-content', position: 'relative' }}>
-      <Card className={classes.card}>
-        <CardContent style={{ width: 330 }}>
-          <FormControl variant="outlined" className={classes.control} size={'small'}>
-            <InputLabel id="skin-select-label">皮肤</InputLabel>
-            <Select
-              classes={{ root: classes.select }}
-              labelId="skin-select-label"
-              native={isMobile()}
-              value={state.skin}
-              onChange={(e) => {
-                dispatch({
-                  action: Actions.changeSkin,
-                  skin: e.target.value as string,
-                });
-              }}>
-              {skinList.map((v) => {
-                return isMobile() ? (
-                  <option value={v} key={v}>
-                    {v}
-                  </option>
-                ) : (
-                  <MenuItem value={v} key={v}>
-                    {v}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-          <FormControl variant="outlined" size={'small'} className={classes.control}>
-            <InputLabel id="model-select-label">模型</InputLabel>
-            <Select
-              classes={{ root: classes.select }}
-              labelId="model-select-label"
-              value={state.model}
-              native={isMobile()}
-              onChange={(e) => {
-                dispatch({
-                  action: Actions.changeModel,
-                  model: e.target.value as string,
-                });
-              }}>
-              {state.modelList.map((v) => {
-                return isMobile() ? (
-                  <option value={v} key={v}>
-                    {v}
-                  </option>
-                ) : (
-                  <MenuItem value={v} key={v}>
-                    {v}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-          <FormControl variant="outlined" size={'small'} className={classes.control}>
-            <InputLabel id="ani-select-label"></InputLabel>
-            <Select
-              classes={{ root: classes.select }}
-              labelId="ani-select-label"
-              native={isMobile()}
-              value={state.animation}
-              onChange={(e) => {
-                dispatch({
-                  action: Actions.changeAni,
-                  ani: e.target.value as string,
-                });
-              }}>
-              {state.animations.map((v) => {
-                return isMobile() ? (
-                  <option value={v} key={v}>
-                    {v}
-                  </option>
-                ) : (
-                  <MenuItem value={v} key={v}>
-                    {v}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-          <Grid container justify="space-around">
-            <FormControlLabel
-              control={
-                <Switch
-                  value={isLoop}
-                  onChange={(e) => {
-                    setLoop(e.target.checked);
-                  }}
-                />
-              }
-              label="循环播放"
-              labelPlacement="bottom"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  value={transparent}
-                  onChange={(e) => {
-                    console.log(e);
-                    setTransparent(e.target.checked);
-                  }}
-                />
-              }
-              label="透明背景"
-              labelPlacement="bottom"
-            />
-            <FormControlLabel
-              control={
-                <ColorPicker
-                  hideTextfield
-                  disableAlpha
-                  // defaultValue="transparent"
-                  deferred
-                  value={'#' + color}
-                  onChange={(e) => {
-                    if (transparent) {
-                      return;
-                    }
-                    setColor(e.hex);
-                  }}
-                />
-              }
-              disabled={transparent}
-              label="背景颜色"
-              labelPlacement="bottom"
-            />
-          </Grid>
-          <Typography component="div" style={{ margin: '4px 0' }}>
-            <Box textAlign="left">播放速度</Box>
-          </Typography>
-          <Slider
-            aria-labelledby="continuous-slider"
-            step={0.1}
-            min={0.1}
-            max={2}
-            // marks={true}
-            defaultValue={1}
-            value={speed}
-            valueLabelDisplay="auto"
-            onChange={(_, v: number | number[]) => {
-              setSpeed(v as number);
-            }}></Slider>
-          <Grid container justify="center">
-            <Tooltip
-              title={
-                supportWebm
-                  ? '实验性WEBM导出'
-                  : '当前浏览器/设备不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1和桌面CPU'
-              }
-              aria-label="WEBM导出">
-              <Badge color="primary" badgeContent={'webm'}>
-                <IconButton
-                  disabled={!supportWebm}
-                  onClick={() => {
-                    setRecState(true);
-                    spineRef.current?.rec(
-                      `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
-                    );
-                  }}>
-                  <GetAppOutlined />
-                </IconButton>
-              </Badge>
-            </Tooltip>
-            <Tooltip title="重置位置" aria-label="重置位置">
-              <IconButton
-                onClick={() => {
-                  spineRef.current?.reset();
+    <StylesProvider generateClassName={generateClassName}>
+      <div style={{ width: 'fit-content', position: 'relative' }}>
+        <Card className={classes.card}>
+          <CardContent style={{ width: 330 }}>
+            <FormControl variant="outlined" className={classes.control} size={'small'}>
+              <InputLabel id="skin-select-label">皮肤</InputLabel>
+              <Select
+                classes={{ root: classes.select }}
+                labelId="skin-select-label"
+                native={isMobile()}
+                value={state.skin}
+                onChange={(e) => {
+                  dispatch({
+                    action: Actions.changeSkin,
+                    skin: e.target.value as string,
+                  });
                 }}>
-                <RefreshOutlined />
-              </IconButton>
-            </Tooltip>
-            {!isMobile() ? (
-              <Tooltip title={big ? '缩小' : '放大'} aria-label={big ? '缩小' : '放大'}>
+                {skinList.map((v) => {
+                  return isMobile() ? (
+                    <option value={v} key={v}>
+                      {v}
+                    </option>
+                  ) : (
+                    <MenuItem value={v} key={v}>
+                      {v}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+            <FormControl variant="outlined" size={'small'} className={classes.control}>
+              <InputLabel id="model-select-label">模型</InputLabel>
+              <Select
+                classes={{ root: classes.select }}
+                labelId="model-select-label"
+                value={state.model}
+                native={isMobile()}
+                onChange={(e) => {
+                  dispatch({
+                    action: Actions.changeModel,
+                    model: e.target.value as string,
+                  });
+                }}>
+                {state.modelList.map((v) => {
+                  return isMobile() ? (
+                    <option value={v} key={v}>
+                      {v}
+                    </option>
+                  ) : (
+                    <MenuItem value={v} key={v}>
+                      {v}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+            <FormControl variant="outlined" size={'small'} className={classes.control}>
+              <InputLabel id="ani-select-label"></InputLabel>
+              <Select
+                classes={{ root: classes.select }}
+                labelId="ani-select-label"
+                native={isMobile()}
+                value={state.animation}
+                onChange={(e) => {
+                  dispatch({
+                    action: Actions.changeAni,
+                    ani: e.target.value as string,
+                  });
+                }}>
+                {state.animations.map((v) => {
+                  return isMobile() ? (
+                    <option value={v} key={v}>
+                      {v}
+                    </option>
+                  ) : (
+                    <MenuItem value={v} key={v}>
+                      {v}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+            <Grid container justify="space-around">
+              <FormControlLabel
+                control={
+                  <Switch
+                    value={isLoop}
+                    onChange={(e) => {
+                      setLoop(e.target.checked);
+                    }}
+                  />
+                }
+                label="循环播放"
+                labelPlacement="bottom"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    value={transparent}
+                    onChange={(e) => {
+                      setTransparent(e.target.checked);
+                    }}
+                  />
+                }
+                label="透明背景"
+                labelPlacement="bottom"
+              />
+              <FormControlLabel
+                control={
+                  <ColorPicker
+                    hideTextfield
+                    disableAlpha
+                    // defaultValue="transparent"
+                    deferred
+                    value={'#' + color}
+                    onChange={(e) => {
+                      if (transparent) {
+                        return;
+                      }
+                      setColor(e.hex);
+                    }}
+                  />
+                }
+                disabled={transparent}
+                label="背景颜色"
+                labelPlacement="bottom"
+              />
+            </Grid>
+            <Typography component="div" style={{ margin: '4px 0' }}>
+              <Box textAlign="left">播放速度</Box>
+            </Typography>
+            <Slider
+              aria-labelledby="continuous-slider"
+              step={0.1}
+              min={0.1}
+              max={2}
+              // marks={true}
+              defaultValue={1}
+              value={speed}
+              valueLabelDisplay="auto"
+              onChange={(_, v: number | number[]) => {
+                setSpeed(v as number);
+              }}></Slider>
+            <Grid container justify="center">
+              <Tooltip
+                title={
+                  supportWebm
+                    ? '实验性WEBM导出'
+                    : '当前浏览器/设备不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1和桌面CPU'
+                }
+                aria-label="WEBM导出">
+                <Badge color="primary" badgeContent={'webm'}>
+                  <IconButton
+                    disabled={!supportWebm}
+                    onClick={() => {
+                      setRecState(true);
+                      spineRef.current?.rec(
+                        `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
+                      );
+                    }}>
+                    <GetAppOutlined />
+                  </IconButton>
+                </Badge>
+              </Tooltip>
+              <Tooltip title="重置位置" aria-label="重置位置">
                 <IconButton
                   onClick={() => {
-                    setBig(!big);
+                    spineRef.current?.reset();
                   }}>
-                  {big ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+                  <RefreshOutlined />
                 </IconButton>
               </Tooltip>
-            ) : null}
-            <Tooltip title="动画长度" aria-label="动画长度">
-              <IconButton
-                onClick={() => {
-                  setOpen(true);
-                }}>
-                <InfoOutlined></InfoOutlined>
-              </IconButton>
-            </Tooltip>
-          </Grid>
-        </CardContent>
-        <CardContent>
-          <div
-            style={{
-              width: big ? 1000 : 300,
-              height: big ? 1000 : 300,
-              overflow: 'hidden',
-            }}>
-            <Backdrop
-              open={isLoading}
-              style={{
-                position: 'absolute',
-                width: 300,
-                height: 300,
-                zIndex: 1,
-                top: 'inherit',
-                left: 'inherit',
-                right: 'inherit',
-                bottom: 'inherit',
-              }}>
-              <CircularProgress />
-            </Backdrop>
-            <Spine
-              atlas={prefix + skin[state.skin][state.model].file + '.atlas'}
-              skin={skin[state.skin][state.model].skin || 'default'}
-              json={state.json}
-              ani={state.animation}
-              loop={isLoop}
-              speed={speed}
-              isBig={big}
-              color={color}
-              transparent={transparent}
-              onSuccess={useCallback((details) => {
-                setAnimationDetail(details);
-                setLoading(false);
-              }, [])}
-              onRecFinish={() => {
-                setRecState(false);
-              }}
-              ref={spineRef}
-            />
-          </div>
-        </CardContent>
-      </Card>
-      <Backdrop
-        open={recState}
-        style={{
-          zIndex: 2,
-          right: 'inherit',
-          bottom: 'inherit',
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-        }}>
-        <Card style={{ width: '50%' }}>
+              {!isMobile() ? (
+                <Tooltip title={big ? '缩小' : '放大'} aria-label={big ? '缩小' : '放大'}>
+                  <IconButton
+                    onClick={() => {
+                      setBig(!big);
+                    }}>
+                    {big ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+              <Tooltip title="动画长度" aria-label="动画长度">
+                <IconButton
+                  onClick={() => {
+                    setOpen(true);
+                  }}>
+                  <InfoOutlined></InfoOutlined>
+                </IconButton>
+              </Tooltip>
+            </Grid>
+          </CardContent>
           <CardContent>
-            <div style={{ marginBottom: 16 }}>
-              正在导出 {name}-{state.skin}-{state.model}-{state.animation}-x
-              {speed}.webm
+            <div
+              style={{
+                width: big ? 1000 : 300,
+                height: big ? 1000 : 300,
+                overflow: 'hidden',
+              }}>
+              <Backdrop
+                open={isLoading}
+                style={{
+                  position: 'absolute',
+                  width: 300,
+                  height: 300,
+                  zIndex: 1,
+                  top: 'inherit',
+                  left: 'inherit',
+                  right: 'inherit',
+                  bottom: 'inherit',
+                }}>
+                <CircularProgress />
+              </Backdrop>
+              <Spine
+                atlas={prefix + skin[state.skin][state.model].file + '.atlas'}
+                skin={skin[state.skin][state.model].skin || 'default'}
+                json={state.json}
+                ani={state.animation}
+                loop={isLoop}
+                speed={speed}
+                isBig={big}
+                color={color}
+                transparent={transparent}
+                onSuccess={useCallback((details) => {
+                  setAnimationDetail(details);
+                  setLoading(false);
+                }, [])}
+                onRecFinish={() => {
+                  setRecState(false);
+                }}
+                ref={spineRef}
+              />
             </div>
-            <LinearProgress color="secondary" />
           </CardContent>
         </Card>
-      </Backdrop>
-      <Dialog
-        open={open}
-        onClose={() => {
-          setOpen(false);
-        }}>
-        <DialogTitle>
-          {name} - {state.skin} - {state.model}
-        </DialogTitle>
-        <DialogContent>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>动画</TableCell>
-                  <TableCell>持续时间(s)</TableCell>
-                  <TableCell>帧数(30/s)</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {animationDetail.map((r) => (
-                  <TableRow key={r.name}>
-                    <TableCell>{r.name}</TableCell>
-                    <TableCell>{r.duration}</TableCell>
-                    <TableCell>{Math.round(r.duration * 30)}</TableCell>
+        <Backdrop
+          open={recState}
+          style={{
+            zIndex: 2,
+            right: 'inherit',
+            bottom: 'inherit',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}>
+          <Card style={{ width: '50%' }}>
+            <CardContent>
+              <div style={{ marginBottom: 16 }}>
+                正在导出 {name}-{state.skin}-{state.model}-{state.animation}-x
+                {speed}.webm
+              </div>
+              <LinearProgress color="secondary" />
+            </CardContent>
+          </Card>
+        </Backdrop>
+        <Dialog
+          open={open}
+          onClose={() => {
+            setOpen(false);
+          }}>
+          <DialogTitle>
+            {name} - {state.skin} - {state.model}
+          </DialogTitle>
+          <DialogContent>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>动画</TableCell>
+                    <TableCell>持续时间(s)</TableCell>
+                    <TableCell>帧数(30/s)</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </DialogContent>
-      </Dialog>
-    </div>
+                </TableHead>
+                <TableBody>
+                  {animationDetail.map((r) => (
+                    <TableRow key={r.name}>
+                      <TableCell>{r.name}</TableCell>
+                      <TableCell>{r.duration}</TableCell>
+                      <TableCell>{Math.round(r.duration * 30)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </StylesProvider>
   );
 }

@@ -165,7 +165,6 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
           return;
         }
         const delta = isFirefox() ? e.deltaY / -480 : e.deltaY * -0.001;
-        console.log(delta, e.deltaY);
         setScale((v) => {
           if (v + delta <= 0) {
             return v;
@@ -199,7 +198,6 @@ export const Spine = forwardRef<SpineRef, SpineProps>(
       if (!widget) {
         return;
       }
-      // console.log(widget.backgroundColor);
       // 单纯是动画变了 不需要重新渲染widget 直接调用api换在播放的动画
       widget.state.setAnimation(0, ani, loopRef.current);
     }, [ani]);
