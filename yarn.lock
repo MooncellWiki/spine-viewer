@@ -1611,8 +1611,10 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-"material-ui-color@file:material-ui-color/dist":
-  version "1.1.0"
+material-ui-color@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/material-ui-color/-/material-ui-color-1.2.0.tgz#3dde809e9f5f4a29499add83640aeadaaec36f6c"
+  integrity sha512-bD2Rww+hakJxD2/19uxc280Vh292DnRStLke2LDFavVtGd5fzOz09zIrHO3ZHlMkJFsvwx6IwiB4/932ftv0sQ==
 
 material-ui-popup-state@^1.8.3:
   version "1.8.3"

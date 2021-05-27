@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --base=http://static.prts.wiki/spinev2/",
-    "analyze":"source-map-explorer dist/*.js",
+    "analyze": "source-map-explorer dist/*.js",
     "serve": "vite preview",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "lint:format": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\" ",
@@ -15,7 +15,7 @@
     "@material-ui/core": "^4.11.4",
     "@material-ui/icons": "^4.11.2",
     "hammerjs": "^2.0.8",
-    "material-ui-color": "file:material-ui-color/dist/",
+    "material-ui-color": "^1.2.0",
     "material-ui-popup-state": "^1.8.3",
     "prop-types": "^15.7.2",
     "react": "^17.0.0",
