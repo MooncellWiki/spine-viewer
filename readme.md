@@ -4,11 +4,6 @@ The next spine viewer for [prts.wiki](http://prts.wiki/w/Widget:Spinev2)
 ```sh
 git clone https://github.com/MooncellWiki/spine-viewer.git
 cd spine-viewer
-git submodule update --init --recursive
-cd material-ui-color
-yarn
-yarn build
-cd ..
 yarn 
 yarn dev
 ```
