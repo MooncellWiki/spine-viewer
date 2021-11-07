@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build --base=http://static.prts.wiki/spinev2/",
+    "build": "tsc && vite build",
     "analyze": "source-map-explorer dist/*.js",
     "serve": "vite preview",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
