@@ -1,6 +1,6 @@
 import { Button, makeStyles } from '@material-ui/core';
 import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import React, { useState } from 'react';
 
 import Spine, { Props } from './component/Control';
@@ -11,7 +11,7 @@ const useStyles = makeStyles({
   },
 });
 function App(props: Props): JSX.Element {
-  const theme = createMuiTheme({
+  const theme = createTheme({
     overrides: {
       MuiPopover: {
         root: {

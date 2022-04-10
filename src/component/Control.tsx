@@ -37,12 +37,15 @@ import {
   InfoOutlined,
   RefreshOutlined,
 } from '@material-ui/icons';
-import { ColorPicker, useTranslate } from 'material-ui-color';
+import { ColorPicker, ColorValue, useTranslate } from 'material-ui-color';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
+import { useEvent } from '../hooks/useEvent';
 import zhCN from '../i18n.json';
-import { isMobile, ReqSkelData } from '../utils';
-import { AnimationDetail, Spine, SpineRef } from './Spine';
+import { Spine } from '../spine';
+import { isMobile } from '../utils';
+import { AnimationDetail, Info } from './Info';
+// import { AnimationDetail, Spine, SpineRef } from './Spine';
 export interface Props {
   prefix: string;
   name: string;
@@ -62,7 +65,6 @@ interface States {
   model: string;
   animations: string[];
   animation: string;
-  json: string;
 }
 enum Actions {
   changeSkin,
@@ -84,7 +86,6 @@ interface ChangeAni {
 }
 interface Update {
   action: Actions.update;
-  json: string;
   animations: string[];
 }
 const generateClassName = createGenerateClassName({
@@ -104,54 +105,61 @@ const useStyles = makeStyles({
     width: 'fit-content',
   },
 });
+// interface AnimationDetail {
+//   duration: number;
+//   name: string;
+// }
 export default function Control({ prefix, skin, name }: Props): JSX.Element {
   const translate = (v: string): string => {
     return ((zhCN as any)[v] as string) || v;
   };
   useTranslate(() => ({ i18n: { language: 'zhCN' }, t: translate }));
   const classes = useStyles();
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const { big, setBig } = useEvent(canvas);
   const skinList = Object.keys(skin);
   const [animationDetail, setAnimationDetail] = useState<AnimationDetail[]>([]);
   const [isLoading, setLoading] = useState(true);
-  // const setAnimationDetail = useCallback(innerSetAnimationDetail, [innerSetAnimationDetail]);
   const [isLoop, setLoop] = useState(false);
-  const [transparent, setTransparent] = useState(false);
-  const [color, setColor] = useState<string>('ffffff');
+  const [color, setColor] = useState<ColorValue>('00000000');
   const [speed, setSpeed] = useState(1);
-  const [big, setBig] = useState(false);
-  const spineRef = useRef<SpineRef>(null);
+
   const [state, dispatch] = useReducer(
     (state: States, action: ChangeSkin | ChangeModel | Update | ChangeAni) => {
-      switch (action.action) {
-        case Actions.changeSkin:
-          return {
-            json: '',
-            skin: action.skin,
-            modelList: Object.keys(skin[action.skin]),
-            model: Object.keys(skin[action.skin])[0],
-            animations: [],
-            animation: '',
-          };
-        case Actions.changeModel:
-          return {
-            ...state,
-            json: '',
-            model: action.model,
-            animations: [],
-            animation: '',
-          };
-        case Actions.update:
-          return {
-            ...state,
-            animation: action.animations[0],
-            animations: action.animations,
-            json: action.json,
-          };
-        case Actions.changeAni:
-          return {
-            ...state,
-            animation: action.ani,
-          };
+      if (action.action == Actions.changeSkin) {
+        return {
+          skin: action.skin,
+          modelList: Object.keys(skin[action.skin]),
+          model: Object.keys(skin[action.skin])[0],
+          animations: [],
+          animation: '',
+        };
+      }
+      if (action.action == Actions.changeModel) {
+        return {
+          ...state,
+          model: action.model,
+          animations: [],
+          animation: '',
+        };
+      }
+      if (action.action == Actions.update) {
+        return {
+          ...state,
+          animation: action.animations[0],
+          animations: action.animations,
+        };
+      }
+      if (action.action == Actions.changeAni) {
+        const cur = Spine.get().getCurrent();
+        if (cur) {
+          console.log('ani change', cur);
+          cur.state.setAnimation(0, action.ani, isLoop);
+        }
+        return {
+          ...state,
+          animation: action.ani,
+        };
       }
       return state;
     },
@@ -161,21 +169,46 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
       model: Object.keys(skin[skinList[0]])[0],
       animations: [],
       animation: '',
-      json: '',
     },
   );
-  const [open, setOpen] = useState(false);
   const supportWebm =
     window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm') && !isMobile();
-  useEffect(() => {
-    ReqSkelData(prefix + skin[state.skin][state.model].file + '.skel').then(
-      (data: any) => {
-        const animations = Object.keys(data.animations);
-        dispatch({ action: Actions.update, animations, json: data });
-      },
-    );
-  }, [prefix, skin, state.model, state.skin]);
+
   const [recState, setRecState] = useState(false);
+
+  useEffect(() => {
+    console.log('change', state);
+    if (!canvas.current) {
+      return;
+    }
+    setLoading(true);
+    const spine = Spine.get(canvas.current);
+    const path = prefix + skin[state.skin][state.model].file;
+    spine
+      .load(`${state.skin}-${state.model}`, `${path}.skel`, `${path}.atlas`, {
+        x: -500,
+        y: -200,
+        scale: 1,
+      })
+      .then(({ skeleton, state: aniState }) => {
+        console.log(spine);
+        const animations = skeleton.data.animations.map((v) => v.name);
+        dispatch({
+          action: Actions.update,
+          animations,
+        });
+        // spine.move(-500, -200);
+        // dispatch update 时会把animation选中到第0个
+
+        setAnimationDetail(
+          skeleton.data.animations.map((v) => ({ name: v.name, duration: v.duration })),
+        );
+        setLoading(false);
+        spine.play(`${state.skin}-${state.model}`);
+        console.log('set ani');
+        aniState.setAnimation(0, animations[0], isLoop);
+      });
+  }, [prefix, skin, state.model, state.skin]);
   return (
     <StylesProvider generateClassName={generateClassName}>
       <div style={{ width: 'fit-content', position: 'relative' }}>
@@ -259,12 +292,18 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                 })}
               </Select>
             </FormControl>
-            <Grid container justify="space-around">
+            <Grid container justifyContent="space-around">
               <FormControlLabel
                 control={
                   <Switch
                     value={isLoop}
                     onChange={(e) => {
+                      const state = Spine.get().getCurrent().state;
+                      state.setAnimation(
+                        0,
+                        state.tracks[0].animation.name,
+                        e.target.checked,
+                      );
                       setLoop(e.target.checked);
                     }}
                   />
@@ -274,33 +313,21 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               />
               <FormControlLabel
                 control={
-                  <Checkbox
-                    value={transparent}
-                    onChange={(e) => {
-                      setTransparent(e.target.checked);
-                    }}
-                  />
-                }
-                label="透明背景"
-                labelPlacement="bottom"
-              />
-              <FormControlLabel
-                control={
                   <ColorPicker
                     hideTextfield
-                    disableAlpha
-                    // defaultValue="transparent"
                     deferred
                     value={'#' + color}
                     onChange={(e) => {
-                      if (transparent) {
-                        return;
+                      console.log(e);
+                      const color = e.rgb.map((v) => v / 255);
+                      if (color.length == 3) {
+                        color.push(1);
                       }
+                      Spine.get().bg = color as [number, number, number, number];
                       setColor(e.hex);
                     }}
                   />
                 }
-                disabled={transparent}
                 label="背景颜色"
                 labelPlacement="bottom"
               />
@@ -318,9 +345,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               value={speed}
               valueLabelDisplay="auto"
               onChange={(_, v: number | number[]) => {
+                Spine.get().getCurrent().state.timeScale = v as number;
                 setSpeed(v as number);
               }}></Slider>
-            <Grid container justify="center">
+            <Grid container justifyContent="center">
               <Tooltip
                 title={
                   supportWebm
@@ -328,14 +356,23 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                     : '当前浏览器/设备不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1和桌面CPU'
                 }
                 aria-label="WEBM导出">
-                <Badge color="primary" badgeContent={'webm'}>
+                <Badge color="primary" badgeContent={'webm'} overlap="rectangular">
                   <IconButton
                     disabled={!supportWebm}
                     onClick={() => {
                       setRecState(true);
-                      spineRef.current?.rec(
-                        `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
-                      );
+                      //todo
+                      Spine.get()
+                        .record(
+                          state.animation,
+                          `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
+                        )
+                        .then(() => {
+                          setRecState(false);
+                        });
+                      // spineRef.current?.rec(
+                      //   `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
+                      // );
                     }}>
                     <GetAppOutlined />
                   </IconButton>
@@ -344,7 +381,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               <Tooltip title="重置位置" aria-label="重置位置">
                 <IconButton
                   onClick={() => {
-                    spineRef.current?.reset();
+                    Spine.get().transform(-500, -200, 1);
                   }}>
                   <RefreshOutlined />
                 </IconButton>
@@ -359,14 +396,9 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                   </IconButton>
                 </Tooltip>
               ) : null}
-              <Tooltip title="动画长度" aria-label="动画长度">
-                <IconButton
-                  onClick={() => {
-                    setOpen(true);
-                  }}>
-                  <InfoOutlined></InfoOutlined>
-                </IconButton>
-              </Tooltip>
+              <Info
+                title={`${name} - ${state.skin} - ${state.model}`}
+                animationDetail={animationDetail}></Info>
             </Grid>
           </CardContent>
           <CardContent>
@@ -390,7 +422,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                 }}>
                 <CircularProgress />
               </Backdrop>
-              <Spine
+              {/* <Spine
                 atlas={prefix + skin[state.skin][state.model].file + '.atlas'}
                 skin={skin[state.skin][state.model].skin || 'default'}
                 json={state.json}
@@ -408,7 +440,27 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                   setRecState(false);
                 }}
                 ref={spineRef}
-              />
+              /> */}
+              <div
+                style={{
+                  backgroundImage: `
+        linear-gradient(45deg, #ccc 25%, transparent 25%), 
+        linear-gradient(135deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(135deg, transparent 75%, #ccc 75%)`,
+                  backgroundSize: '24px 24px',
+                  backgroundPosition: '0 0, 12px 0, 12px -12px, 0px 12px',
+                }}>
+                <div
+                  style={{
+                    width: 1000,
+                    height: 1000,
+                    transform: big ? '' : 'scale(0.3,0.3)',
+                    transformOrigin: 'top left',
+                  }}>
+                  <canvas width={1000} height={1000} ref={canvas} />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -432,37 +484,6 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
             </CardContent>
           </Card>
         </Backdrop>
-        <Dialog
-          open={open}
-          onClose={() => {
-            setOpen(false);
-          }}>
-          <DialogTitle>
-            {name} - {state.skin} - {state.model}
-          </DialogTitle>
-          <DialogContent>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>动画</TableCell>
-                    <TableCell>持续时间(s)</TableCell>
-                    <TableCell>帧数(30/s)</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {animationDetail.map((r) => (
-                    <TableRow key={r.name}>
-                      <TableCell>{r.name}</TableCell>
-                      <TableCell>{r.duration}</TableCell>
-                      <TableCell>{Math.round(r.duration * 30)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContent>
-        </Dialog>
       </div>
     </StylesProvider>
   );

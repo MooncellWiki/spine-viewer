@@ -1,26 +1,3 @@
-import { SkeletonBinary } from './spine/runtime/SkeletonBinary3.5.js';
-const parse = (data: Uint8Array) => {
-  const parser = new SkeletonBinary();
-  parser.data = data;
-  parser.initJson();
-  return parser.json;
-};
-export function ReqSkelData(path: string): Promise<unknown> {
-  return new Promise((res, rej) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', path, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onloadend = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        res(parse(new Uint8Array(xhr.response)));
-      } else {
-        rej(xhr.status);
-      }
-    };
-    xhr.send();
-  });
-}
-
 export function isMobile(): boolean {
   if (
     window.navigator.userAgent.match(
