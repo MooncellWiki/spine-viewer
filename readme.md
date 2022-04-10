@@ -10,5 +10,4 @@ yarn dev
 open [Widget:Spinev2/dev](http://prts.wiki/w/Widget:Spinev2/dev)
 
 ## todo
-- [ ] 学[kkdy](https://github.com/KKDYData/KokodayoData/blob/master/src/utils/Spine/initSpine.js)切换到spine-webgl
 - [ ] 支持GIF导出
