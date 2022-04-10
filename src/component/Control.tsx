@@ -349,35 +349,30 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                 setSpeed(v as number);
               }}></Slider>
             <Grid container justifyContent="center">
-              <Tooltip
-                title={
-                  supportWebm
-                    ? '实验性WEBM导出'
-                    : '当前浏览器/设备不支持webm导出 需要edge >=79或firefox >=29或chrome >=49或safari >=14.1和桌面CPU'
-                }
-                aria-label="WEBM导出">
-                <Badge color="primary" badgeContent={'webm'} overlap="rectangular">
-                  <IconButton
-                    disabled={!supportWebm}
-                    onClick={() => {
-                      setRecState(true);
-                      //todo
-                      Spine.get()
-                        .record(
-                          state.animation,
-                          `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
-                        )
-                        .then(() => {
-                          setRecState(false);
-                        });
-                      // spineRef.current?.rec(
-                      //   `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
-                      // );
-                    }}>
-                    <GetAppOutlined />
-                  </IconButton>
-                </Badge>
-              </Tooltip>
+              {supportWebm ? (
+                <Tooltip title="实验性webm导出">
+                  <Badge color="primary" badgeContent={'webm'} overlap="rectangular">
+                    <IconButton
+                      onClick={() => {
+                        if (!supportWebm) {
+                          return;
+                        }
+                        setRecState(true);
+                        Spine.get()
+                          .record(
+                            state.animation,
+                            `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
+                          )
+                          .then(() => {
+                            setRecState(false);
+                          });
+                      }}>
+                      <GetAppOutlined />
+                    </IconButton>
+                  </Badge>
+                </Tooltip>
+              ) : undefined}
+
               <Tooltip title="重置位置" aria-label="重置位置">
                 <IconButton
                   onClick={() => {
