@@ -417,25 +417,6 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                 }}>
                 <CircularProgress />
               </Backdrop>
-              {/* <Spine
-                atlas={prefix + skin[state.skin][state.model].file + '.atlas'}
-                skin={skin[state.skin][state.model].skin || 'default'}
-                json={state.json}
-                ani={state.animation}
-                loop={isLoop}
-                speed={speed}
-                isBig={big}
-                color={color}
-                transparent={transparent}
-                onSuccess={useCallback((details) => {
-                  setAnimationDetail(details);
-                  setLoading(false);
-                }, [])}
-                onRecFinish={() => {
-                  setRecState(false);
-                }}
-                ref={spineRef}
-              /> */}
               <div
                 style={{
                   backgroundImage: `
