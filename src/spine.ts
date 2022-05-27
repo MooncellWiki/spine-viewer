@@ -32,18 +32,18 @@ export class Spine {
   activeSkeleton: string | undefined;
   debug = false;
   position: Position;
-  static inner?: Spine;
+  // static inner?: Spine;
 
-  static get(canvas?: HTMLCanvasElement): Spine {
-    if (!Spine.inner) {
-      if (!canvas) {
-        throw new Error('spine is not init.');
-      }
-      const s = new Spine(canvas);
-      Spine.inner = s;
-    }
-    return Spine.inner;
-  }
+  // static get(canvas?: HTMLCanvasElement): Spine {
+  //   if (!Spine.inner) {
+  //     if (!canvas) {
+  //       throw new Error('spine is not init.');
+  //     }
+  //     const s = new Spine(canvas);
+  //     Spine.inner = s;
+  //   }
+  //   return Spine.inner;
+  // }
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     // const gl = canvas.getContext('webgl', { alpha: true }) as WebGLRenderingContext;

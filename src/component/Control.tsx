@@ -116,7 +116,8 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
   useTranslate(() => ({ i18n: { language: 'zhCN' }, t: translate }));
   const classes = useStyles();
   const canvas = useRef<HTMLCanvasElement>(null);
-  const { big, setBig } = useEvent(canvas);
+  const spineRef = useRef<Spine | undefined>(undefined);
+  const { big, setBig } = useEvent(canvas, spineRef);
   const skinList = Object.keys(skin);
   const [animationDetail, setAnimationDetail] = useState<AnimationDetail[]>([]);
   const [isLoading, setLoading] = useState(true);
@@ -151,7 +152,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
         };
       }
       if (action.action == Actions.changeAni) {
-        const cur = Spine.get().getCurrent();
+        const cur = spineRef.current?.getCurrent();
         if (cur) {
           console.log('ani change', cur);
           cur.state.setAnimation(0, action.ani, isLoop);
@@ -182,16 +183,16 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
       return;
     }
     setLoading(true);
-    const spine = Spine.get(canvas.current);
+    spineRef.current = new Spine(canvas.current);
     const path = prefix + skin[state.skin][state.model].file;
-    spine
+    spineRef.current
       .load(`${state.skin}-${state.model}`, `${path}.skel`, `${path}.atlas`, {
         x: -500,
         y: -200,
         scale: 1,
       })
       .then(({ skeleton, state: aniState }) => {
-        console.log(spine);
+        console.log(spineRef.current);
         const animations = skeleton.data.animations.map((v) => v.name);
         dispatch({
           action: Actions.update,
@@ -204,7 +205,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
           skeleton.data.animations.map((v) => ({ name: v.name, duration: v.duration })),
         );
         setLoading(false);
-        spine.play(`${state.skin}-${state.model}`);
+        spineRef.current?.play(`${state.skin}-${state.model}`);
         console.log('set ani');
         aniState.setAnimation(0, animations[0], isLoop);
       });
@@ -298,7 +299,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                   <Switch
                     value={isLoop}
                     onChange={(e) => {
-                      const state = Spine.get().getCurrent().state;
+                      if (!spineRef.current) {
+                        return;
+                      }
+                      const state = spineRef.current.getCurrent().state;
                       state.setAnimation(
                         0,
                         state.tracks[0].animation.name,
@@ -323,7 +327,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                       if (color.length == 3) {
                         color.push(1);
                       }
-                      Spine.get().bg = color as [number, number, number, number];
+                      if (!spineRef.current) {
+                        return;
+                      }
+                      spineRef.current.bg = color as [number, number, number, number];
                       setColor(e.hex);
                     }}
                   />
@@ -345,7 +352,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               value={speed}
               valueLabelDisplay="auto"
               onChange={(_, v: number | number[]) => {
-                Spine.get().getCurrent().state.timeScale = v as number;
+                if (!spineRef.current) {
+                  return;
+                }
+                spineRef.current.getCurrent().state.timeScale = v as number;
                 setSpeed(v as number);
               }}></Slider>
             <Grid container justifyContent="center">
@@ -358,7 +368,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                           return;
                         }
                         setRecState(true);
-                        Spine.get()
+                        if (!spineRef.current) {
+                          return;
+                        }
+                        spineRef.current
                           .record(
                             state.animation,
                             `${name}-${state.skin}-${state.model}-${state.animation}-x${speed}`,
@@ -376,7 +389,10 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
               <Tooltip title="重置位置" aria-label="重置位置">
                 <IconButton
                   onClick={() => {
-                    Spine.get().transform(-500, -200, 1);
+                    if (!spineRef.current) {
+                      return;
+                    }
+                    spineRef.current.transform(-500, -200, 1);
                   }}>
                   <RefreshOutlined />
                 </IconButton>

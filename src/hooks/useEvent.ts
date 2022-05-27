@@ -1,9 +1,12 @@
 import hammer from 'hammerjs';
-import { useEffect, useRef, useState } from 'react';
+import { MutableRefObject, useEffect, useRef, useState } from 'react';
 
 import { Spine } from '../spine';
 import { isFirefox } from '../utils';
-export function useEvent(canvas: React.RefObject<HTMLCanvasElement>): {
+export function useEvent(
+  canvas: React.RefObject<HTMLCanvasElement>,
+  spineRef: MutableRefObject<Spine | undefined>,
+): {
   big: boolean;
   setBig: React.Dispatch<React.SetStateAction<boolean>>;
 } {
@@ -19,11 +22,14 @@ export function useEvent(canvas: React.RefObject<HTMLCanvasElement>): {
     }
     const hm = new hammer(canvas.current);
     const getPosition = () => {
-      return Spine.get().position;
+      return spineRef.current!.position;
     };
 
     hm.get('pinch').set({ enable: true });
     hm.on('panstart', () => {
+      if (!spineRef.current) {
+        return;
+      }
       const { x, y } = getPosition();
       startPosition.current = {
         x,
@@ -31,12 +37,14 @@ export function useEvent(canvas: React.RefObject<HTMLCanvasElement>): {
       };
     });
     hm.on('panmove', (e) => {
-      console.log('panmove');
+      if (!spineRef.current) {
+        return;
+      }
       const { scale } = getPosition();
       const { x, y } = startPosition.current!;
-      console.log(e.deltaX, e.deltaY);
+      // console.log(e.deltaX, e.deltaY);
       const ratio = (isBigRef.current ? 1 : 10 / 3) / scale;
-      Spine.get().move(x - e.deltaX * ratio, y + e.deltaY * ratio);
+      spineRef.current.move(x - e.deltaX * ratio, y + e.deltaY * ratio);
     });
     hm.on('panend', () => {
       startPosition.current = undefined;
@@ -48,11 +56,14 @@ export function useEvent(canvas: React.RefObject<HTMLCanvasElement>): {
         return;
       }
       const delta = isFirefox() ? e.deltaY / -480 : e.deltaY * -0.001;
+      if (!spineRef.current) {
+        return;
+      }
       const { scale } = getPosition();
       if (scale + delta <= 0) {
         return;
       }
-      Spine.get().scale(scale + delta);
+      spineRef.current?.scale(scale + delta);
     };
     canvas.current.addEventListener('wheel', wheelHandler);
     return () => {
