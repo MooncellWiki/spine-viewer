@@ -176,14 +176,17 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
     window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm') && !isMobile();
 
   const [recState, setRecState] = useState(false);
-
   useEffect(() => {
-    console.log('change', state);
     if (!canvas.current) {
       return;
     }
-    setLoading(true);
     spineRef.current = new Spine(canvas.current);
+  },[]);
+  useEffect(() => {
+    console.log('change', state);
+
+    setLoading(true);
+
     const path = prefix + skin[state.skin][state.model].file;
     spineRef.current
       .load(`${state.skin}-${state.model}`, `${path}.skel`, `${path}.atlas`, {
