@@ -156,6 +156,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
         if (cur) {
           console.log('ani change', cur);
           cur.state.setAnimation(0, action.ani, isLoop);
+          cur.state.timeScale = speed;
         }
         return {
           ...state,
@@ -181,7 +182,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
       return;
     }
     spineRef.current = new Spine(canvas.current);
-  },[]);
+  }, []);
   useEffect(() => {
     console.log('change', state);
 
@@ -189,7 +190,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
 
     const path = prefix + skin[state.skin][state.model].file;
     spineRef.current
-      .load(`${state.skin}-${state.model}`, `${path}.skel`, `${path}.atlas`, {
+      ?.load(`${state.skin}-${state.model}`, `${path}.skel`, `${path}.atlas`, {
         x: -500,
         y: -200,
         scale: 1,
@@ -211,6 +212,7 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
         spineRef.current?.play(`${state.skin}-${state.model}`);
         console.log('set ani');
         aniState.setAnimation(0, animations[0], isLoop);
+        aniState.timeScale = speed;
       });
   }, [prefix, skin, state.model, state.skin]);
   return (
@@ -305,7 +307,11 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                       if (!spineRef.current) {
                         return;
                       }
-                      const state = spineRef.current.getCurrent().state;
+                      const cur = spineRef.current.getCurrent();
+                      if (!cur) {
+                        return;
+                      }
+                      const state = cur.state;
                       state.setAnimation(
                         0,
                         state.tracks[0].animation.name,
@@ -358,7 +364,11 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
                 if (!spineRef.current) {
                   return;
                 }
-                spineRef.current.getCurrent().state.timeScale = v as number;
+                const cur = spineRef.current.getCurrent();
+                if (!cur) {
+                  return;
+                }
+                cur.state.timeScale = v as number;
                 setSpeed(v as number);
               }}></Slider>
             <Grid container justifyContent="center">

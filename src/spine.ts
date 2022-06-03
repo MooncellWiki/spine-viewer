@@ -194,9 +194,9 @@ export class Spine {
 
     requestAnimationFrame(this.render.bind(this));
   }
-  getCurrent(): Skeleton {
+  getCurrent(): Skeleton | undefined {
     if (!this.activeSkeleton) {
-      throw new Error('activeSkeleton is empty');
+      return undefined;
     }
     console.log('getCurrent', this.activeSkeleton);
     return this.skeletons[this.activeSkeleton];
