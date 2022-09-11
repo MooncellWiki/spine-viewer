@@ -190,11 +190,17 @@ export default function Control({ prefix, skin, name }: Props): JSX.Element {
 
     const path = prefix + skin[state.skin][state.model].file;
     spineRef.current
-      ?.load(`${state.skin}-${state.model}`, `${path}.skel`, `${path}.atlas`, {
-        x: -500,
-        y: -200,
-        scale: 1,
-      })
+      ?.load(
+        `${state.skin}-${state.model}`,
+        `${path}.skel`,
+        `${path}.atlas`,
+        {
+          x: -500,
+          y: -200,
+          scale: 1,
+        },
+        skin[state.skin][state.model].skin,
+      )
       .then(({ skeleton, state: aniState }) => {
         console.log(spineRef.current);
         const animations = skeleton.data.animations.map((v) => v.name);

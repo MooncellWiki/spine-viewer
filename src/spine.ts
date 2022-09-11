@@ -71,13 +71,21 @@ export class Spine {
     skelPath: string,
     atlasPath: string,
     position: Position,
+    skinName?: string,
     premultipliedAlpha = true,
   ): Promise<Skeleton> {
     if (this.skeletons[name]) {
       return this.skeletons[name];
     }
     await this.fetchAssets(skelPath, atlasPath);
-    return this.loadSkel(name, skelPath, atlasPath, position, premultipliedAlpha);
+    return this.loadSkel(
+      name,
+      skelPath,
+      atlasPath,
+      position,
+      premultipliedAlpha,
+      skinName,
+    );
   }
   private async fetchAssets(skel: string, atlas: string): Promise<string[]> {
     const skelPromise = new Promise<string>((res, rej) => {
@@ -104,6 +112,7 @@ export class Spine {
     atlasPath: string,
     position: Position,
     premultipliedAlpha = true,
+    skinName?: string,
   ): Skeleton {
     const atlas = this.assetManager.get(atlasPath);
     const atlasLoader = new spine.AtlasAttachmentLoader(atlas);
@@ -111,6 +120,9 @@ export class Spine {
     const skeletonBinary = new spine.SkeletonBinary(atlasLoader);
     const skeletonData = skeletonBinary.readSkeletonData(skel);
     const skeleton = new spine.Skeleton(skeletonData);
+    if (skinName) {
+      skeleton.setSkinByName(skinName);
+    }
     const bounds = calculateBounds(skeleton);
     const animationStateData = new spine.AnimationStateData(skeleton.data);
     const animationState = new spine.AnimationState(animationStateData);
@@ -158,6 +170,7 @@ export class Spine {
     // Apply the animation state based on the delta time.
     const state = this.skeletons[this.activeSkeleton].state;
     const skeleton = this.skeletons[this.activeSkeleton].skeleton;
+    // console.log(skeleton);
     // const bounds = this.skeletons[this.activeSkeleton].bounds;
     const premultipliedAlpha = this.skeletons[this.activeSkeleton].premultipliedAlpha;
     state.update(delta);
